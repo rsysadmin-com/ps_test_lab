@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
   #config.vm.network "private_network", type: "dhcp"
   config.vm.network "private_network", type: "static", ip: "192.168.121.150"
 
-  config.vm.provision "shell", path: "bootstrap.sh", :args => "'DOMAIN'"
+  config.vm.provision "shell", path: "ps_bootstrap.sh", :args => "'DOMAIN'"
 end
 ```
 
@@ -54,7 +54,7 @@ Suggestion: replace `DOMAIN` with something you might find more useful, like you
 Now you can run either `vagrant up` or `recreate_vm.sh` to get the test lab rolled out.
 
 
-## bootstrap.sh
+## ps_bootstrap.sh
 
 This is the script that is called by Vagrant once the VM has been deployed and it does all the heavy lifting for you.
 
