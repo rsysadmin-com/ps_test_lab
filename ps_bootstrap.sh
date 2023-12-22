@@ -12,6 +12,8 @@ ps_version=1.7.4.2
 # PHP version to install
 # This blog offers a good overview on version compatibility:
 # -> https://www.prestasoo.com/blog/prestashop-php-version
+# This link offers a good guidance on how to install PHP:
+# -> https://www.techsupportpk.com/2019/12/how-to-install-php-71-72-73-74-on-ubuntu-16-17-18-19.html
 ps_php_version=7.4
 
 # DB info
