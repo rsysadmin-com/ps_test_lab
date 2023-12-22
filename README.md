@@ -71,6 +71,8 @@ Set the PHP version needed to run the Prestashop version defined above:
 # PHP version to install
 # This blog offers a good overview on version compatibility:
 # -> https://www.prestasoo.com/blog/prestashop-php-version
+# This link offers a good guidance on how to install PHP:
+# -> https://www.techsupportpk.com/2019/12/how-to-install-php-71-72-73-74-on-ubuntu-16-17-18-19.html
 ps_php_version=7.4
 ```
 
@@ -164,7 +166,7 @@ After that, you can import your MySQL/MariaDB dump onto your `ps_real_db` using 
 
 Finally, you will need to update the DB connection info in `app/config/parameters.php`; use the `update_parameters.sh` script for that if you don't want to do it manually.
 
-And you are now all set and should have a local working copy of your production website.
+And you are now all set and should have a local working copy of your prod website.
 
 
 ## Helper scripts
