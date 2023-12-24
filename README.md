@@ -156,17 +156,17 @@ Now run the Prestashop install process as usual:
 - follow the instructions on screen until you get to the DB configuration screen
 - in the DB config screen, enter the info for the dummy DB:
 
-  - db_name: prestashop
-
-  - db_user: prestauser
-
-  - db_pass: Passw0rd1
+  - db_name: `prestashop`
+  - db_user: `prestauser`
+  - db_pass: `Passw0rd1`
 
 After that, you can import your MySQL/MariaDB dump onto your `ps_real_db` using the `db_import.sh` script (see below) and update the contents of the `img` directory with the `refresh_img.sh` script (also see below).
 
 Finally, you will need to update the DB connection info in `app/config/parameters.php`; use the `update_parameters.sh` script for that if you don't want to do it manually.
 
 And you are now all set and should have a local working copy of your prod website.
+
+After you finished with all your tests, you can kill the Vagrant instance with `vagrant destroy`; you may use `-f` if you don't want to be asked for confirmation.
 
 
 ## Helper scripts
