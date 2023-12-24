@@ -162,7 +162,7 @@ Now run the Prestashop install process as usual:
 
 After that, you can import your MySQL/MariaDB dump onto your `ps_real_db` using the `db_import.sh` script (see below) and update the contents of the `img` directory with the `refresh_img.sh` script (also see below).
 
-Finally, you will need to update the DB connection info in `app/config/parameters.php`; use the `update_parameters.sh` script for that if you don't want to do it manually.
+Finally, you will need to update the DB connection info in `app/config/parameters.php` to point to the production DB; use the `update_parameters.sh` script for that if you don't want to do it manually.
 
 And you are now all set and should have a local working copy of your prod website.
 
