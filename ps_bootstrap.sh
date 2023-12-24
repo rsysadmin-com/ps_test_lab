@@ -72,6 +72,11 @@ sed -i "s/us./${ps_apt_mirror}./g" /etc/apt/sources.list
 echo "========= Update apt cache ============"
 sudo apt-get update
 
+echo "========= Add APT repo for PHP ============"
+sudo apt-get install software-properties-common -y
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+
 echo "=========  Installing Apache 2 and PHP ${ps_php_version} ========= "
 sudo apt-get install apache2 php${ps_php_version} \
         libapache2-mod-php${ps_php_version} \
@@ -84,6 +89,9 @@ sudo apt-get install apache2 php${ps_php_version} \
         php-xml \
         php-cli \
         unzip -y
+
+echo "=========  Set PHP default version to ${ps_php_version} ========="
+sudo update-alternatives --set php /usr/bin/php${ps_php_version}
 
 php_config_output=$(php -i | grep -i cli/php.ini)
 php_ini_path=$(echo "$php_config_output" | awk -F\> '{ print $2 }')
@@ -221,7 +229,7 @@ sudo a2ensite $ps_domain
 
 echo "========= Disable default Apache sites ========="
 sudo a2dissite 000-default
-sudo ad2dissite default-ssl 
+sudo a2dissite default-ssl 
 
 echo "=========  Generate self-signed SSL certificate and key for Apache2 ========= "
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
