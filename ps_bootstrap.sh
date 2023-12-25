@@ -37,8 +37,8 @@ ps_decoy_db_pass="Passw0rd1"
 ps_domain=$1
 if [ -z $ps_domain ]
 then
-    echo "Usage: $(basename $0) <domain-name.tld>"
-    echo " e.g.: $(basename $0) mydomain.tld"
+    echo -e "\nUsage: $(basename $0) <domain-name.tld>"
+    echo -e "\n e.g.: $(basename $0) mydomain.tld"
     exit 1
 fi
 
@@ -61,23 +61,38 @@ ps_timezone="Europe/Zurich"
 # ----------------------------------------------------------------------------
 # ----------- YOU SHOULD NOT NEED TO EDIT BELOW THIS LINE --------------------
 # ----------------------------------------------------------------------------
+
+# output everything to a log file - you will need it if something goes wrong
+ps_install_log=./ps_testlab_install_$(date +"%Y%m%d-%T").log
+exec > >(tee -i $ps_install_log)
+exec 2>&1
+
 ps_url="https://github.com/PrestaShop/PrestaShop/releases/download/${ps_version}/prestashop_${ps_version}.zip"
 ps_dir=/var/www/html
 ps_vhost_config=/etc/apache2/sites-available/$ps_domain.conf
 
 # main()
-echo "========= Update apt sources: US->CH ========"
+cat <<BANNER
+
+Prestashop Test Lab Installer
+
+by martinm@rsysadmin.com
+=============================
+
+BANNER
+
+echo -e "\n========= Update apt sources: US->CH ========"
 sed -i "s/us./${ps_apt_mirror}./g" /etc/apt/sources.list
 
-echo "========= Update apt cache ============"
+echo -e "\n========= Update apt cache ============"
 sudo apt-get update
 
-echo "========= Add APT repo for PHP ============"
+echo -e "\n========= Add APT repo for PHP ============"
 sudo apt-get install software-properties-common -y
 sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
-echo "=========  Installing Apache 2 and PHP ${ps_php_version} ========= "
+echo -e "\n=========  Installing Apache 2 and PHP ${ps_php_version} ========= "
 sudo apt-get install apache2 php${ps_php_version} \
         libapache2-mod-php${ps_php_version} \
         php${ps_php_version}-gd \
@@ -90,13 +105,13 @@ sudo apt-get install apache2 php${ps_php_version} \
         php-cli \
         unzip -y
 
-echo "=========  Set PHP default version to ${ps_php_version} ========="
+echo -e "\n=========  Set PHP default version to ${ps_php_version} ========="
 sudo update-alternatives --set php /usr/bin/php${ps_php_version}
 
 php_config_output=$(php -i | grep -i cli/php.ini)
-php_ini_path=$(echo "$php_config_output" | awk -F\> '{ print $2 }')
+php_ini_path=$(echo -e "\n$php_config_output" | awk -F\> '{ print $2 }')
 
-echo "=========  Update PHP options ========= "
+echo -e "\n=========  Update PHP options ========= "
 echo "-- set file_uploads = On "
 sed -i 's/^file_uploads =.*/file_uploads = On/g' $php_ini_path
 
@@ -121,19 +136,16 @@ sed -i 's/^max_execution_time =.*/max_execution_time = 360/g' $php_ini_path
 echo "-- set date.timezone = $ps_timezone"
 sed -i 's/^date.timezone =.*/date.timezone = ${ps_timezone}/g' $php_ini_path
 
-echo "=========  Installing MariaDB ========= "
+echo -e "\n=========  Install MariaDB ========= "
 sudo apt-get install mariadb-server -y
 
-echo "=========  Install Apache2 ========= "
+echo -e "\n=========  Install Apache2 ========= "
 sudo apt-get install apache2 -y
 
-echo "=========  Stop Apache2  ========= "
+echo -e "\n=========  Stop Apache2  ========= "
 sudo systemctl stop apache2
 
-echo "=========  Disable Apache2 default site ========= "
-sudo a2dissite 000-default.conf
-
-echo "=========  Upload Apache2 VirtualHost configuration ========= "
+echo -e "\n=========  Upload Apache2 VirtualHost configuration ========= "
 sudo cat <<DRAMA > $ps_vhost_config
 
 <VirtualHost *:80>
@@ -202,64 +214,64 @@ sudo cat <<DRAMA > $ps_vhost_config
 
 DRAMA
 
-echo "=========  Download Prestashop v$ps_version"
+echo -e "\n=========  Download Prestashop v$ps_version"
 wget -qc $ps_url
 
-echo "=========  Uncompress Prestashop $ps_version ZIP file ========= "
+echo -e "\n=========  Uncompress Prestashop $ps_version ZIP file ========= "
 sudo unzip prestashop_${ps_version}.zip -d $ps_dir
 
-echo "=========  Remove default index.html ========= "
+echo -e "\n=========  Remove default index.html ========= "
 sudo rm -f $ps_dir/index.html
 
-echo "=========  Fix ownership of $ps_dir ========= "
+echo -e "\n=========  Fix ownership of $ps_dir ========= "
 sudo chown -R www-data:www-data $ps_dir
 
-echo "=========  Fix directory permissions of $ps_dir ========= "
+echo -e "\n=========  Fix directory permissions of $ps_dir ========= "
 sudo find $ps_dir -type d -exec chmod 755 {} \;
 
-echo "=========  Fix file permissions of $ps_dir ========= "
+echo -e "\n=========  Fix file permissions of $ps_dir ========= "
 sudo find $ps_dir -type f -exec chmod 644 {} \;
 
-echo "=========  Enable Apache2 modules: rewrite, SSL ========= "
+echo -e "\n=========  Enable Apache2 modules: rewrite, SSL ========= "
 sudo a2enmod rewrite
 sudo a2enmod ssl
 
-echo "=========  Enable $ps_domain VirtualHost ========= "
+echo -e "\n=========  Enable $ps_domain VirtualHost ========= "
 sudo a2ensite $ps_domain
 
-echo "========= Disable default Apache sites ========="
+echo -e "\n========= Disable default Apache sites ========="
 sudo a2dissite 000-default
 sudo a2dissite default-ssl 
 
-echo "=========  Generate self-signed SSL certificate and key for Apache2 ========= "
+echo -e "\n=========  Generate self-signed SSL certificate and key for Apache2 ========= "
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/ssl/private/${ps_domain}.key \
     -out /etc/ssl/certs/${ps_domain}.crt \
     -subj "/C=$ssl_country/ST=$ssl_state/L=$ssl_location/O=$ssl_org/OU=$ssl_ou/CN=$ps_domain"
 
-echo "=========  Enable and start Apache2 ========= "
+echo -e "\n=========  Enable and start Apache2 ========= "
 sudo systemctl enable --now apache2
 
-echo "========= Upload update_parameters.sh ========= "
+echo -e "\n========= Upload update_parameters.sh ========= "
 sudo cat<<PARAM > /root/update_parameters.sh
 #!/bin/bash
 
 file=/var/www/html/app/config/parameters.php
 
-echo "-- create backup"
+echo -e "-- create backup"
 cp -v \$file \${file}_org
-echo "-- update DB name"
+echo -e "-- update DB name"
 sed -i 's/$ps_decoy_db/$ps_real_db/g'        \$file
-echo "-- update DB user"
+echo -e "-- update DB user"
 sed -i 's/$ps_decoy_db_user/$ps_real_db_user/g'     \$file
-echo "-- update DB passwd"
+echo -e "-- update DB passwd"
 sed -i 's/$ps_decoy_db_pass/$ps_real_db_pass/g'        \$file
-echo "-- update DB table prefix"
+echo -e "-- update DB table prefix"
 sed -i 's/ps_/$ps_real_db_prefix/g'                    \$file
 
 PARAM
 
-echo "========= Upload DB management script ==========="
+echo -e "\n========= Upload DB management script ==========="
 cat <<SCRIPT > /root/create_db_and_user.sh
 #!/bin/bash
 DB=\$1
@@ -279,7 +291,7 @@ echo "Password:   \$PASS"
 
 SCRIPT
 
-echo "========= Upload DB import script ========"
+echo -e "\n========= Upload DB import script ========"
 cat <<DBIMPORT > /root/db_import.sh
 #!/bin/bash
 db_name=$ps_real_db
@@ -289,14 +301,14 @@ mysql \$db_name < /home/vagrant/$ps_real_db_sql_dump_file
 
 DBIMPORT
 
-echo "========= Upload img refresh script ========"
+echo -e "\n========= Upload img refresh script ========"
 cat <<DBIMPORT > /root/refresh_img.sh
 #!/bin/bash
 
 echo "- removing old img directory"
 rm -rf /var/www/html/img
 
-echo "- unziping img.zip to img directory"
+echo "- unzipping img.zip to img directory"
 unzip -q /home/vagrant/img.zip -d /var/www/html
 
 echo "- setting permissions"
@@ -304,7 +316,7 @@ chown -R www-data: /var/www/html/img
 
 DBIMPORT
 
-echo "========= Set script permissions ========"
+echo -e "\n========= Set script permissions ========"
 scripts="create_db_and_user.sh \
          update_parameters.sh \
          db_import.sh \
@@ -316,10 +328,10 @@ do
     chmod -v 755 /root/$i
 done
 
-echo "========= Create decoy DB [ $ps_decoy_db ] =========="
+echo -e "\n========= Create decoy DB [ $ps_decoy_db ] =========="
 /root/create_db_and_user.sh $ps_decoy_db $ps_decoy_db_user $ps_decoy_db_pass
 
-echo "========= Create production DB [ $ps_real_db ] ========="
+echo -e "\n========= Create production DB [ $ps_real_db ] ========="
 /root/create_db_and_user.sh $ps_real_db $ps_real_db_user $ps_real_db_pass
 
-echo "=========  INFO: Upload your img.zip and DB dump to complete the process."
+echo -e "\n=========  INFO: Upload your img.zip and DB dump to complete the process."
