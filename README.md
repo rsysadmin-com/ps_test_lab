@@ -168,6 +168,10 @@ And you are now all set and should have a local working copy of your prod websit
 
 After you finished with all your tests, you can kill the Vagrant instance with `vagrant destroy`; you may use `-f` if you don't want to be asked for confirmation.
 
+## What if something goes wrong during the deployment?
+You can take a look at the log file where everything has been logged under `/home/vagrant/ps_testlab_install_YYYYMMDD-HH:MM:SS.log` to find out where things failed during the installation.
+
+
 
 ## Helper scripts
 
